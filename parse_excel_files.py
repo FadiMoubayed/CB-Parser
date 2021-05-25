@@ -6,7 +6,7 @@ import pandas as pd
 file_name = "CB PACiFIC_TEF30_2021 up to 08 April.xls"
 # providing the file relative path
 # Is this a good way to provide that file path or should I use os.path.relpath??
-file_path = './Excel Files/' + file_name
+file_path = './Excel_Files/' + file_name
 # providing the file sheet that will be read
 file_sheet = "Daily general"
 
@@ -16,9 +16,29 @@ sheet_names = xl.sheet_names
 print("The sheets available in this excel file '" + file_name + "' are: " + '\n')
 print(*sheet_names, sep='\n')
 
+
+
+names = ['time_period_start',
+         'time_period_end',
+         'wind_direction_degree',
+         'wind_speed_km',
+         'swell_direction_degree',
+         'swell_height_km',
+         'seascale_beaufort_scale',
+         'current_direction_degree',
+         'current_speed_kt',
+         'draft_fwd_m',
+         'draft_aft_m',
+         'mean_draft_m',
+         'trim_m',
+         'ballast_quantity_cbm',
+         '_ttl_displacement_mt',
+         'remarks']
+
 # reading the excel file
-df = pd.read_excel(file_path, sheet_name=file_sheet)
+df = pd.read_excel(file_path, sheet_name=file_sheet, names=names)
 # properly renaming columns
+
 df.rename(columns={'Time period': 'time_period_start',
                    'Unnamed: 1': 'time_period_end',
                    'Wind': 'wind_direction_degree',
@@ -71,11 +91,8 @@ last_notna_index = df_3.apply(pd.Series.last_valid_index)
 print('\n' + "The last index is")
 print(last_notna_index)
 
-
-
 # writing the file to csv
 df_3.to_csv("output_csv", encoding='utf-8', index=False)
-
 
 # Checking the columns after being renamed
 print(df_3.columns)
@@ -114,3 +131,8 @@ print(df_3.head)
 #     print("Hi Marzi! Num Num Num Num Num Num Num")
 #
 # say_hello()
+
+
+# TODO: make sure the sheet exist in the file
+
+# TODO: make sure the vlaues start at the same line (generic or hard coded?)
