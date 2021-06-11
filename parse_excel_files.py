@@ -16,8 +16,7 @@ sheet_names = xl.sheet_names
 print("The sheets available in this excel file '" + file_name + "' are: " + '\n')
 print(*sheet_names, sep='\n')
 
-
-
+# providing the final column names
 names = ['time_period_start',
          'time_period_end',
          'wind_direction_degree',
@@ -37,67 +36,50 @@ names = ['time_period_start',
 
 # reading the excel file
 df = pd.read_excel(file_path, sheet_name=file_sheet, names=names)
-# properly renaming columns
 
-df.rename(columns={'Time period': 'time_period_start',
-                   'Unnamed: 1': 'time_period_end',
-                   'Wind': 'wind_direction_degree',
-                   'Unnamed: 3': 'wind_speed_km',
-                   'Swell': 'swell_direction_degree',
-                   'Unnamed: 5': 'swell_height_km',
-                   'Seascale': 'seascale_beaufort_scale',
-                   # this has a space before
-                   ' Current': 'current_direction_degree',
-                   'Unnamed: 8': 'current_speed_kt',
-                   'Draft': 'draft_fwd_m',
-                   'Unnamed: 10': 'draft_aft_m',
-                   'Mean draft': 'mean_draft_m',
-                   'Trim': 'trim_m',
-                   'Ballast': 'ballast_quantity_cbm',
-                   'ttl displacement': '_ttl_displacement_mt',
-                   'Remarks': 'remarks',
-                   }, inplace=True)
+# TODO: Check why float is returned as the index and not integer!
 
-# dropping the first three rows
-df_3 = df.iloc[3:]
+# I am not sure why the values' type here is float and not integer. I am not sure either if simply converting the firs
+# value of the series to integer is a good solution?
 
-# Here it results in SettingWithCopyWarning
-# renaming the columns of the dataframe
-# df_3.rename(columns={'Time period': 'time_period_start',
-#                      'Unnamed: 1': 'time_period_end',
-#                      'Wind': 'wind_direction_degree',
-#                      'Unnamed: 3': 'wind_speed_km',
-#                      'Swell': 'swell_direction_degree',
-#                      'Unnamed: 5': 'swell_height_km',
-#                      'Seascale': 'seascale_beaufort_scale',
-#                      'Current': 'current_direction_degree',
-#                      'Unnamed: 8': 'current_speed_kt',
-#                      'Draft': 'draft_fwd_m',
-#                      'Unnamed: 10': 'draft_aft_m',
-#                      'Mean draft': 'mean_draft_m',
-#                      'Trim': 'trim_m',
-#                      'Ballast': 'ballast_quantity_cbm',
-#                      'ttl displacement': '_ttl_displacement_mt',
-#                      'Remarks': 'remarks',
-#                      }, inplace=True)
 
-# getting the first non Na index
-first_notna_index = df_3.apply(pd.Series.first_valid_index)
+# getting the first non Na index in each column
+first_notna_index = df.apply(pd.Series.first_valid_index)
 print('\n' + "The first index is")
 print(first_notna_index)
+print("the type of the object first_notna_index  is: ")
+print(type(first_notna_index))
+print("The first value of the not na series")
+print(int(first_notna_index[0]))
+
+# dropping the null rows based on the first valid value of the first column (after removing the first three rows)
+df_3 = df.iloc[int(first_notna_index[0]):]
+
+# TODO: use dropna instead of the last value.
+
+# I think it is better to use the last value of the first column instead of dropna for the following reasons:
+    # 1- if NA values are present amongst the valid values, they will be removed as well. This information might be useful
+    #    other columns.
+    # 2- I am not sure if dropna will be able to detect 0 values or remove them
 
 # getting the last non Na index
 last_notna_index = df_3.apply(pd.Series.last_valid_index)
 print('\n' + "The last index is")
 print(last_notna_index)
 
+df_final = df.iloc[:int(last_notna_index[0])]
+print(df_final)
+df_final.to_csv("output_csv_final", encoding='utf-8', index=False)
+
+# TODO: change the name of the output csv file to match the name of the original file.
+# TODO: change the output to an output folder
 # writing the file to csv
 df_3.to_csv("output_csv", encoding='utf-8', index=False)
 
 # Checking the columns after being renamed
-print(df_3.columns)
-print(df_3.info())
-print(df_3.head)
+# print(df_3.columns)
+# print(df_3.info())
+# print(df_3.head)
 # print(df.iloc[0])
 # print(df.iloc[1])
 # print(df.iloc[2])
@@ -135,4 +117,4 @@ print(df_3.head)
 
 # TODO: make sure the sheet exist in the file
 
-# TODO: make sure the vlaues start at the same line (generic or hard coded?)
+# TODO: make sure the values start at the same line (generic or hard coded?)

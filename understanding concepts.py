@@ -37,3 +37,19 @@ print(first_index)
 # last valid index for each column
 last_index = df.apply(pd.Series.last_valid_index)
 print(last_index)
+
+# Understanding how to remove rows after a certain index using df.iloc
+mydict = [{'a': 1, 'b': 2, 'c': 3, 'd': 4},
+          {'a': 100, 'b': 200, 'c': 300, 'd': 400},
+          {'a': 1000, 'b': 2000, 'c': 3000, 'd': 4000 },
+          {'a': 44, 'b': 45, 'c': 46, 'd': 47},
+          {'a': 55, 'b': 56, 'c': 57, 'd': 58}]
+
+df = pd.DataFrame(mydict)
+print(df)
+
+# Sclicing before the second row (index 3)
+print(df.iloc[3:])
+
+# Slicing after the second row (index 3)
+print(df.iloc[:3])
