@@ -1,5 +1,5 @@
 # Ignoring the excel fils
-./Excel_Files/
+Excel_Files/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
