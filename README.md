@@ -1,5 +1,5 @@
 # CB-Parser
-Parses Carl Büttner's data and converts it to csv format
+Parses Carl Büttner's data Excel sheets and converts them to csv format
 
 ## Procedure
 + Read the Excel sheet as a dataframe using Pandas and properly rename the columns (Remove the spaces)
@@ -8,6 +8,7 @@ Parses Carl Büttner's data and converts it to csv format
 + Save the result to a csv file
 
 ## How to use
++ Add a folder Excel_Files to the working directory
 + Load the desired file into the folder Excel_Files
-+ Provide the name of the file in the variable file_name
++ Provide the name of the file that is to be converted into csv in the variable "file_name"
 + The result is saved (!!!!!!! Still need to work on this !!!!!!!!!!!)
