@@ -90,7 +90,7 @@ def read_events_sheet(file_path: Path, out_path: Path):
     df[usecols_names[14:]] = df[usecols_names[14:]].fillna(0)
 
     # drop rows having no timestamp or location
-    df = df.dropna(subset=['Date', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'])
+    df = df.dropna(subset=['Date', 'time', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'])
     df = df[df['time'].astype(str).map(len) <= 8]
 
     # create a timestamp row by combining date and time
@@ -114,14 +114,14 @@ def read_events_sheet(file_path: Path, out_path: Path):
 
 
 if __name__ == '__main__':
-    cb_folder = 'CB'  # the root folder
+    cb_folder = 'CB'  # the root folder for the Excel files
     for root, dirs, files in os.walk(cb_folder):
         for file in files:
             file_path = Path(root, file)
 
             # read events sheet
-            read_events_sheet(file_path, Path(file_path.stem + '_events.csv'))
+            read_events_sheet(file_path, Path('events_' + file_path.stem + '.csv'))
 
             # read general sheet
-            read_general_sheet(file_path, Path(file_path.stem + '_general.csv'))
+            read_general_sheet(file_path, Path('general_' + file_path.stem + '.csv'))
             print(file_path)
