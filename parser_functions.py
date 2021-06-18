@@ -39,8 +39,7 @@ def read_general_sheet(file_path: Path, out_path: Path):
 
     # reading the excel file
     df = pd.read_excel(file_path, sheet_name='Daily general',
-                       names=cols_dict.keys()
-                       )
+                       names=cols_dict.keys())
 
     # drop all empty columns
     df = df.dropna(axis=1, how='all').dropna(subset=['time_period_start', 'time_period_end'])
@@ -55,16 +54,14 @@ def read_general_sheet(file_path: Path, out_path: Path):
     # cast each numeric column to its datatype. Note: with 'coerce' invalid parsing will be set as NaN.
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
-    # drop all empty columns
+    # drop all nan values
     df = df.dropna()
 
-    # cast each datatype
+    # cast each datatype and save to csv file
     df.astype(cols_dict).to_csv(out_path, index=False)
 
 
 def read_events_sheet(file_path: Path, out_path: Path):
-    file_sheet = "Events"
-
     # skipping header rows
     skiprows = [0, 1, 2, 3, 4]
 
@@ -86,7 +83,7 @@ def read_events_sheet(file_path: Path, out_path: Path):
                      'ROB Consumption HFO (mt)', 'ROB Consumption LFO (mt)', 'ROB Consumption MGO/DO (mt)']
 
     # read the sheet using above settings
-    df = pd.read_excel(file_path, sheet_name=file_sheet, skiprows=skiprows, keep_default_na=False, na_values='',
+    df = pd.read_excel(file_path, sheet_name='Events', skiprows=skiprows, keep_default_na=False, na_values='',
                        usecols=usecols, names=usecols_names)
 
     # fill consumption fields with 0 values while engine is off
@@ -110,7 +107,21 @@ def read_events_sheet(file_path: Path, out_path: Path):
               value=df.apply(lambda col: (col.latDeg + col.latMin / 60) * (-1 if col.northSouth == 'S' else 1),
                              axis=1))
 
-    # drop original columns
+    # drop original columns and save to csv file
     df.drop(['Date', 'time', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'], axis=1).to_csv(
         out_path,
         index=False)
+
+
+if __name__ == '__main__':
+    cb_folder = 'CB'  # the root folder
+    for root, dirs, files in os.walk(cb_folder):
+        for file in files:
+            file_path = Path(root, file)
+
+            # read events sheet
+            read_events_sheet(file_path, Path(file_path.stem + '_events.csv'))
+
+            # read general sheet
+            read_general_sheet(file_path, Path(file_path.stem + '_general.csv'))
+            print(file_path)
