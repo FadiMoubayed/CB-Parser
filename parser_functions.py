@@ -43,12 +43,13 @@ def read_general_sheet(file_path: Path, out_path: Path):
                        )
 
     # drop all empty columns
-    df = df.dropna(axis=1, how='all').dropna()
+    df = df.dropna(axis=1, how='all').dropna(subset=['time_period_start', 'time_period_end'])
+    df[numeric_cols] = df[numeric_cols].fillna(0)
 
     # filter the initial dictionary after dropping null values
     cols_dict = {col: cols_dict[col] for col in df.columns if col in cols_dict}
 
-    # convert all cols to a str datatype
+    # convert all columns to a str datatype
     df = df.astype(str)
 
     # cast each numeric column to its datatype. Note: with 'coerce' invalid parsing will be set as NaN.
@@ -59,3 +60,57 @@ def read_general_sheet(file_path: Path, out_path: Path):
 
     # cast each datatype
     df.astype(cols_dict).to_csv(out_path, index=False)
+
+
+def read_events_sheet(file_path: Path, out_path: Path):
+    file_sheet = "Events"
+
+    # skipping header rows
+    skiprows = [0, 1, 2, 3, 4]
+
+    # extract relevant columns
+    usecols = [0, 1, 3, 4, 6, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 21, 22,
+               23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
+               35, 36, 37, 38, 39, 40, 41, 42]
+
+    # setting a name for each selected column
+    usecols_names = ['Date', 'time', 'Voy. Number', 'from', 'to', 'eventCode', 'eventName',
+                     'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest', 'WindForce(bft)',
+                     'Miles sailed (NM)',
+                     'Cargo On Board (MT)', 'MainEngine HFO (mt)', 'MainEngine LFO (mt)', 'MainEngine MGO/DO (mt)',
+                     'Aux.Engine HFO (mt)', 'Aux.Engine LFO (mt)', 'Aux.Engine MGO/DO (mt)',
+                     'Boiler Consumption HFO (mt)', 'Boiler Consumption LFO (mt)', 'Boiler Consumption MGO/DO (mt)',
+                     'IG Consumption HFO (mt)', 'IG Consumption LFO (mt)', 'IG Consumption MGO/DO (mt)',
+                     'Bunkers Received HFO (mt)', 'Bunkers Received LFO (mt)', 'Bunkers Received MGO/DO (mt)',
+                     'Total consumption HFO (mt)', 'Total consumption LFO (mt)', 'Total consumption MGO/DO (mt)',
+                     'ROB Consumption HFO (mt)', 'ROB Consumption LFO (mt)', 'ROB Consumption MGO/DO (mt)']
+
+    # read the sheet using above settings
+    df = pd.read_excel(file_path, sheet_name=file_sheet, skiprows=skiprows, keep_default_na=False, na_values='',
+                       usecols=usecols, names=usecols_names)
+
+    # fill consumption fields with 0 values while engine is off
+    df[usecols_names[14:]] = df[usecols_names[14:]].fillna(0)
+
+    # drop rows having no timestamp or location
+    df = df.dropna(subset=['Date', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'])
+    df = df[df['time'].astype(str).map(len) <= 8]
+
+    # create a timestamp row by combining date and time
+    df.insert(loc=0, column='dateTime',
+              value=df.apply(lambda col: datetime.combine(col.Date, time.fromisoformat(str(col.time))), axis=1))
+
+    # convert longitude from DDM to DD  using (lon° + min'/60 ) * -1/1 for W/E
+    df.insert(loc=1, column='longitude',
+              value=df.apply(lambda col: (col.lonDeg + col.lonMin / 60) * (-1 if col.eastWest == 'W' else 1),
+                             axis=1))
+
+    # convert latitude from DDM to DD  using (lat° + min'/60 ) * -1/1 for S/N
+    df.insert(loc=2, column='latitude',
+              value=df.apply(lambda col: (col.latDeg + col.latMin / 60) * (-1 if col.northSouth == 'S' else 1),
+                             axis=1))
+
+    # drop original columns
+    df.drop(['Date', 'time', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'], axis=1).to_csv(
+        out_path,
+        index=False)
