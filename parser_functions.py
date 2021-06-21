@@ -1,3 +1,5 @@
+import sys
+
 import pandas as pd
 from datetime import time, datetime
 import os
@@ -57,8 +59,7 @@ def read_general_sheet(file_path: Path):
     # drop all nan values
     df = df.dropna()
 
-    # cast each datatype and save to csv file
-    # .to_csv(out_path, index=False)
+    # cast each datatype
     return df.astype(cols_dict)
 
 
@@ -161,15 +162,18 @@ def read_consumption_general(file_path: Path, file_path_out: Path):
 
 
 if __name__ == '__main__':
-    cb_folder = 'C:\\Users\\Sufian\\Desktop\\CB'  # the root folder for the Excel files
-    for root, dirs, files in os.walk(cb_folder):
+    for root, dirs, files in os.walk(sys.argv[1]):
         for file in files:
-            file_path = Path(root, file)
+            if file.endswith('.xls'):
+                output_folder = Path(Path(__file__).parent, 'parsed')
+                output_folder.mkdir(exist_ok=True)
 
-            # read and combine consumption and general sheets
-            read_consumption_general(file_path, Path('general_consumption_' + file_path.stem + '.csv'))
+                file_path = Path(root, file)
 
-            # read events sheet
-            read_events_sheet(file_path, Path('events_' + file_path.stem + '.csv'))
+                # read and combine consumption and general sheets
+                read_consumption_general(file_path, Path(output_folder, 'general_consumption_' + file_path.stem + '.csv'))
 
-            print(file_path)
+                # read events sheet
+                read_events_sheet(file_path, Path(output_folder, 'events_' + file_path.stem + '.csv'))
+
+                print(file_path)
