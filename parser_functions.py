@@ -5,7 +5,7 @@ import numpy as np
 from pathlib import Path
 
 
-def read_general_sheet(file_path: Path, out_path: Path):
+def read_general_sheet(file_path: Path):
     cols_dict = {'time_period_start': np.datetime64,
                  'time_period_end': np.datetime64,
                  'wind_direction_degree': np.int32,
@@ -58,12 +58,13 @@ def read_general_sheet(file_path: Path, out_path: Path):
     df = df.dropna()
 
     # cast each datatype and save to csv file
-    df.astype(cols_dict).to_csv(out_path, index=False)
+    # .to_csv(out_path, index=False)
+    return df.astype(cols_dict)
 
 
-def read_events_sheet(file_path: Path, out_path: Path):
+def read_events_sheet(file_path: Path, file_path_out: Path):
     # skipping header rows
-    skiprows = [0, 1, 2, 3, 4]
+    skiprows = list(range(5))
 
     # extract relevant columns
     usecols = [0, 1, 3, 4, 6, 8, 9, 11, 12, 13, 14, 15, 16, 18, 19, 21, 22,
@@ -93,7 +94,7 @@ def read_events_sheet(file_path: Path, out_path: Path):
     df = df.dropna(subset=['Date', 'time', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'])
     df = df[df['time'].astype(str).map(len) <= 8]
 
-    # create a timestamp row by combining date and time
+    # create a timestamp column by combining date and time
     df.insert(loc=0, column='dateTime',
               value=df.apply(lambda col: datetime.combine(col.Date, time.fromisoformat(str(col.time))), axis=1))
 
@@ -109,19 +110,66 @@ def read_events_sheet(file_path: Path, out_path: Path):
 
     # drop original columns and save to csv file
     df.drop(['Date', 'time', 'latDeg', 'latMin', 'northSouth', 'lonDeg', 'lonMin', 'eastWest'], axis=1).to_csv(
-        out_path,
+        file_path_out,
+        index=False)
+
+
+def read_consumption_sheet(file_path: Path):
+    col_names = ['time_period_start', 'time_period_end',
+                 'MainEngine HFO (mt)', 'MainEngine LFO (mt)', 'MainEngine MGO/DO (mt)',
+                 'MainEngine port side HFO (mt)', 'MainEngine port side LFO (mt)',
+                 'MainEngine port side MGO/DO (mt)',
+                 'MainEngine RH', 'MainEngine RPM', 'MainEngine load (KW)', 'MainEngine load %', 'MainEngine Pitch',
+                 'MainEngine SG Load (KW)', 'MainEngine SG Freq. (HZ)',
+                 'ainEngine Starboard HFO (mt)', 'ainEngine Starboard LFO (mt)',
+                 'ainEngine Starboard MGO/DO (mt)',
+                 'MainEngine Starboard side (RH)', 'MainEngine Starboard side RPM',
+                 'MainEngine Starboard side load (KW)',
+                 'MainEngine Starboard side  load %',
+                 'Aux.Engine HFO (mt)', 'Aux.Engine LFO (mt)', 'Aux.Engine MGO/DO (mt)',
+                 'Aux.Engine 1 RH', 'Aux.Engine 1 Avg.Load (KW)', 'Aux.Engine 1 Avg.Load (%)',
+                 'Aux.Engine 2 RH', 'Aux.Engine 2 Avg.Load (KW)', 'Aux.Engine 2 Avg.Load (%)',
+                 'Aux.Engine 3 RH', 'Aux.Engine 3 Avg.Load (KW)', 'Aux.Engine 3 Avg.Load (%)',
+                 'Aux.Engine Combined Power (kWh)', 'Aux.Engine Combined Mean Load (KW)',
+                 'Boiler Consumption HFO (mt)', 'Boiler Consumption LFO (mt)', 'Boiler Consumption MGO/DO (mt)',
+                 'Boiler Consumption RH',
+                 'IG Consumption HFO (mt)', 'IG Consumption LFO (mt)', 'IG Consumption MGO/DO (mt)',
+                 'IG Consumption RH', 'space1',
+                 'Sulphur Content HFO (%)', 'Sulphur Content LFO (%)',
+                 'Sulphur Content MGO/DO (%)', 'IG Consumption RH', 'space2'
+                                                                    'Sludge ROB (cbm)', 'Sludge incinerated (cbm)',
+                 'Sludge disposed of shore (cbm)', 'generated (cbm)',
+                 'Bilge tank (cbm)', 'Bilge disposal (cbm)']
+
+    # skipping header rows
+    skiprows = list(range(11))
+
+    # reading the excel file
+    df = pd.read_excel(file_path, sheet_name='daily consumptions', skiprows=skiprows,
+                       names=col_names)
+
+    # drop all empty columns and fill missing values with 0
+    return df.dropna(axis=1, how='all').dropna(subset=['time_period_start', 'time_period_end']).fillna(0)
+
+
+def read_consumption_general(file_path: Path, file_path_out: Path):
+    df_general = read_general_sheet(file_path)
+    df_consumption = read_consumption_sheet(file_path)
+    pd.merge(df_general, df_consumption, on=['time_period_start', 'time_period_end']).to_csv(
+        file_path_out,
         index=False)
 
 
 if __name__ == '__main__':
-    cb_folder = 'CB'  # the root folder for the Excel files
+    cb_folder = 'C:\\Users\\Sufian\\Desktop\\CB'  # the root folder for the Excel files
     for root, dirs, files in os.walk(cb_folder):
         for file in files:
             file_path = Path(root, file)
 
+            # read and combine consumption and general sheets
+            read_consumption_general(file_path, Path('general_consumption_' + file_path.stem + '.csv'))
+
             # read events sheet
             read_events_sheet(file_path, Path('events_' + file_path.stem + '.csv'))
 
-            # read general sheet
-            read_general_sheet(file_path, Path('general_' + file_path.stem + '.csv'))
             print(file_path)
