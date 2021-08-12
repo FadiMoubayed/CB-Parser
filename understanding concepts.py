@@ -63,3 +63,6 @@ print(df_type_check['A'].map(type))
 df_type_check['A'].map(type) != str
 
 
+# To print all elements in a serties in Pandas
+with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
+    print(df.iloc[0])
