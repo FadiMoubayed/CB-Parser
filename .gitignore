@@ -1,6 +1,10 @@
 # Ignoring the excel files
 Excel_Files/
 
+# Ignoring the parsed csv files
+parsed/
+parsed_xlsx/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

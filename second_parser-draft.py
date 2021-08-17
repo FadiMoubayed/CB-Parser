@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import re
-
+import haversine as h
 
 # TODO: name this file properly. What is the difference between this file the other CB files?
 
@@ -22,7 +22,7 @@ def convert_ddm_to_dd(ddm):
 file_name = "TestCB.XLSX"
 # providing the file relative path
 # Is this a good way to provide that file path or should I use os.path.relpath??
-file_path = '../Excel_Files/' + file_name
+file_path = './Excel_Files/' + file_name
 
 # Providing column names
 col_names = ['Date/Time (UTC)',
@@ -285,17 +285,19 @@ df['Latitude'] = df['Latitude'].apply(convert_ddm_to_dd)
 # Converting the Longitude column to DD
 df['Longitude'] = df['Longitude'].apply(convert_ddm_to_dd)
 
-lat_col = df.loc[:, "Latitude"]
-print(lat_col)
-
-lon_col = df.loc[:, "Longitude"]
-print(lon_col)
+# lat_col = df.loc[:, "Latitude"]
+# print(lat_col)
+#
+# lon_col = df.loc[:, "Longitude"]
+# print(lon_col)
 
 # printing each column's type
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
     print(df.dtypes)
 
+# Getting the first datetime element
 
+#print(df.iloc[:,0])
 
 
 
