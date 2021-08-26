@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import re
-import haversine as h
+from haversine import haversine, Unit
 
 # TODO: name this file properly. What is the difference between this file the other CB files?
 
@@ -290,6 +290,13 @@ df['Longitude'] = df['Longitude'].apply(convert_ddm_to_dd)
 #
 # lon_col = df.loc[:, "Longitude"]
 # print(lon_col)
+
+
+lyon = (45.7597, 4.8422) # (lat, lon)
+paris = (48.8567, 2.3508)
+
+print(haversine(lyon, paris))
+
 
 # printing each column's type
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also

@@ -22,6 +22,19 @@ def convert_ddm_to_dd(ddm):
     return dd
 
 
+# This function calculates the distance between each set of coordinates. The distance is calculated based on the
+# haversine formula determines the great-circle distance between two points on a sphere given their longitudes and
+# latitudes
+def calculate_distance(df):
+    # This creates a list with a first element of 0 because the first row of coordinates does not result in distance
+    distance = [0, ]
+    for index in range(len(df) - 1):
+        loc1 = df['Latitude'][index], df['Longitude'][index]
+        loc2 = df['Latitude'][index + 1], df['Longitude'][index + 1]
+        distance.append(haversine(loc1, loc2, unit=Unit.KILOMETERS))
+    return distance
+
+
 # TODO: name this function properly
 def read_cb_xlsx(file_path: Path, file_path_out: Path):
     # Providing column names as a list
@@ -155,6 +168,10 @@ def read_cb_xlsx(file_path: Path, file_path_out: Path):
     # Converting the Longitude column to DD
     df['Longitude'] = df['Longitude'].apply(convert_ddm_to_dd)
 
+    # Calculating distance between each set of coordinates. This adds the distance column to the dataframe
+    df.insert(loc=3, column='distance', value=calculate_distance(df))
+
+    # Saving to CSV
     df.to_csv(file_path_out, index=False)
 
 
