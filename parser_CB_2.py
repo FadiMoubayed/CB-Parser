@@ -11,7 +11,7 @@ from haversine import haversine, Unit
 
 # TODO: name this file properly. What is the difference between this file the other CB files?
 
-# TODO: Make sure that coordinates do not have seconds
+# TODO: Make sure that coordinates do not have seconds. If so the convert_ddm_to_dd function needs to accommodate that
 
 # This function converts coordinates from Degrees Decimal Minutes (DDM) to Decimal Degrees (DD)
 def convert_ddm_to_dd(ddm):
@@ -22,12 +22,12 @@ def convert_ddm_to_dd(ddm):
     return dd
 
 
-# This function calculates the distance between each set of coordinates. The distance is calculated based on the
-# haversine formula determines the great-circle distance between two points on a sphere given their longitudes and
-# latitudes
+# This function calculates the distance between each set of coordinates in Kilometers. The distance is calculated
+# based on the haversine formula which determines the great-circle distance between two points on a sphere given
+# their longitudes and latitudes
 def calculate_distance(df):
     # This creates a list with a first element of 0 because the first row of coordinates does not result in distance
-    distance = [0, ]
+    distance = ['Nat', ]
     for index in range(len(df) - 1):
         loc1 = df['Latitude'][index], df['Longitude'][index]
         loc2 = df['Latitude'][index + 1], df['Longitude'][index + 1]
@@ -35,10 +35,24 @@ def calculate_distance(df):
     return distance
 
 
+# This function calculates the time difference between each set of time stamps in hours. This corresponds to the time
+# difference of the time stamps associated with the set of Latitude and Longitude.
+# TODO: Is the time stamp constant amongst all rows? It looks like it is (270 seconds)
+def calculate_time_diff(time_column):
+    d_time = ['Nat', ]
+    for index in range(len(time_column) - 1):
+        end = time_column[index + 1]
+        start = time_column[index]
+        diff = end - start
+        diff_in_hours = diff.total_seconds() / 3600
+        d_time.append(diff_in_hours)
+    return d_time
+
+
 # TODO: name this function properly
 def read_cb_xlsx(file_path: Path, file_path_out: Path):
     # Providing column names as a list
-    col_names = ['Date/Time (UTC)',
+    col_names = ['Date_Time_UTC',
                  'Latitude',
                  'Longitude',
                  'SO2_content_EG_EGC-Tower_outlet',
@@ -168,13 +182,21 @@ def read_cb_xlsx(file_path: Path, file_path_out: Path):
     # Converting the Longitude column to DD
     df['Longitude'] = df['Longitude'].apply(convert_ddm_to_dd)
 
-    # Calculating distance between each set of coordinates. This adds the distance column to the dataframe
+    # Calculating distance between each set of coordinates. This adds a distance column to the dataframe
     df.insert(loc=3, column='distance', value=calculate_distance(df))
+
+    # Calculating time difference
+    df.insert(loc=4, column='time_difference', value=calculate_time_diff(df['Date_Time_UTC']))
+
+    # Calculating the ship's speed. Here the first row is skipped
+    df.insert(loc=5, column='speed',
+              value=df.iloc[1:, :].apply(lambda col: (col.distance / col.time_difference), axis=1))
 
     # Saving to CSV
     df.to_csv(file_path_out, index=False)
 
 
+# TODO: check the sheet's name. Is it TestCB in all files? Also check the file extension.
 if __name__ == '__main__':
     for root, dirs, files in os.walk(sys.argv[1]):
         for file in files:

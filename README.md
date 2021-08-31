@@ -8,7 +8,12 @@ Parses Carl Büttner's data Excel sheets and converts them to csv format
 + Save the result to a csv file
 
 ## How to use
-+ Add a folder Excel_Files to the working directory
-+ Load the desired file into the folder Excel_Files
-+ Provide the name of the file that is to be converted into csv in the variable "file_name"
-+ The result is saved (!!!!!!! Still need to work on this !!!!!!!!!!!)
+In terminal type:
+
+    python3 name_of_the_script.py path_to_excel_files
+
+Example:
+
+    python3 parse_excel_files.py ./Excel_Files/
+
+

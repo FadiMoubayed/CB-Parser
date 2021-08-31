@@ -3,6 +3,7 @@ import pandas as pd
 import re
 from haversine import haversine, Unit
 
+
 # TODO: name this file properly. What is the difference between this file the other CB files?
 
 # TODO: Make sure that coordinates do not have seconds
@@ -292,11 +293,10 @@ df['Longitude'] = df['Longitude'].apply(convert_ddm_to_dd)
 # print(lon_col)
 
 
-lyon = (45.7597, 4.8422) # (lat, lon)
+lyon = (45.7597, 4.8422)  # (lat, lon)
 paris = (48.8567, 2.3508)
 
 print(haversine(lyon, paris))
-
 
 # printing each column's type
 with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
@@ -304,7 +304,4 @@ with pd.option_context('display.max_rows', None, 'display.max_columns', None):  
 
 # Getting the first datetime element
 
-#print(df.iloc[:,0])
-
-
-
+# print(df.iloc[:,0])

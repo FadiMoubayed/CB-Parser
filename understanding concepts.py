@@ -1,4 +1,5 @@
 import inspect
+from datetime import datetime
 
 import pandas as pd
 import numpy as np
@@ -94,6 +95,10 @@ dict_time_lat_lon = {
     'latitude': [32.266666666666666, 30.15, 32.45, 45.77]}
 
 df2 = pd.DataFrame(dict_time_lat_lon)
+
+print(type(df2['time'][1]))
+
+
 # df2['lat_diff'] = np.deg2rad(df2['latitude'].diff())
 # df2['lon_diff'] = np.deg2rad(df2['longitude'].diff())
 # print(df2)
