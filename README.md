@@ -7,6 +7,17 @@ Parses Carl Büttner's data Excel sheets and converts them to csv format
 + Drop the NA values in the dataframe and only keep the valid values
 + Save the result to a csv file
 
+## Second parser
++ Converts the latitude and longitude from degrees-minutes-seconds to degrees
++ Calculates distance between each set of coordinates using the haversine formula using the following function:
+
+    https://pypi.org/project/haversine/
+
++ Calculates the speed of the ship between each set of coordinates in kilometers per hour
++ Calculates the bearing in degrees between each set of coordinates using the following function:
+
+    https://pyproj4.github.io/pyproj/stable/api/geod.html#pyproj-geod
+
 ## How to use
 In terminal type:
 

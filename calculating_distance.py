@@ -1,6 +1,7 @@
 from math import radians
 import pandas as pd
 import numpy as np
+import pyproj
 
 from haversine import haversine, Unit
 
@@ -54,8 +55,14 @@ lon1 = 45.003166666666665
 lat2 = 0.5636666666666666
 lon2 = 45.00366666666667
 
-test_distance = haversine(lat1, lon1, lat2, lon2)
-print(test_distance)
+
+fwd_azimuth = pyproj.Geod(ellps='WGS84').inv(lon1, lat1, lon2, lat2)
+print(fwd_azimuth[0])
+print(type(fwd_azimuth))
+
+
+# test_distance = haversine(lat1, lon1, lat2, lon2)
+# print(test_distance)
 
 # TRYING TO USE LAMBDAS - DOES NOT WORK!!!
 # def calculate_distance(df):

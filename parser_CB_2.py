@@ -6,6 +6,8 @@ import os
 import numpy as np
 from pathlib import Path
 import re
+
+import pyproj
 from haversine import haversine, Unit
 
 
@@ -36,7 +38,8 @@ def calculate_distance(df):
 
 
 # This function calculates the time difference between each set of time stamps in hours. This corresponds to the time
-# difference of the time stamps associated with the set of Latitude and Longitude.
+# difference of the time stamps associated with the set of Latitude and Longitude. Here the column in the dataframe
+# should be passed so that the it is not hard coded in the function.
 # TODO: Is the time stamp constant amongst all rows? It looks like it is (270 seconds)
 def calculate_time_diff(time_column):
     d_time = ['Nat', ]
@@ -47,6 +50,18 @@ def calculate_time_diff(time_column):
         diff_in_hours = diff.total_seconds() / 3600
         d_time.append(diff_in_hours)
     return d_time
+
+
+def calculate_forward_azimuth(df):
+    azimuth = ['Nat', ]
+    for index in range(len(df) - 1):
+        lon1 = df['Longitude'][index]
+        lat1 = df['Latitude'][index]
+        lon2 = df['Longitude'][index + 1]
+        lat2 = df['Latitude'][index + 1]
+        f_azimuth, b_azimuth, distance = pyproj.Geod(ellps='WGS84').inv(lon1, lat1, lon2, lat2)
+        azimuth.append(f_azimuth)
+    return azimuth
 
 
 # TODO: name this function properly
@@ -191,6 +206,9 @@ def read_cb_xlsx(file_path: Path, file_path_out: Path):
     # Calculating the ship's speed. Here the first row is skipped
     df.insert(loc=5, column='speed',
               value=df.iloc[1:, :].apply(lambda col: (col.distance / col.time_difference), axis=1))
+
+    # Calculating bearing
+    df.insert(loc=6, column='bearing', value=calculate_forward_azimuth(df))
 
     # Saving to CSV
     df.to_csv(file_path_out, index=False)
